@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content=
+    "width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="style.css">
+        <title>Tech Care</title>
+        <script src="index.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <link type="text/css" href="https://getbootstrap.com/1.0.0/assets/css/bootstrap-1.0.0.min.css">
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script>
+            $( document ).ready(function() {
+                console.log( "document loaded" );
+                let url = 'https://fedskillstest.coalitiontechnologies.workers.dev';
+                let username = 'coalition';
+                let password = 'skills-test';
+                let base64Auth = btoa(username + ':' + password)
+                let headers = new Headers();
+                headers.append('Authorization', 'Basic ' + base64Auth);
+                fetch(url, {
+                        method:'GET',
+                        headers: headers,
+                    })
+                    .then(function(response) {
+                        $('#patient-data').empty();
+                        $('#patient-main').empty()
+                        return response.json(); 
+                    })
+                    .then(data => {
+                        // render jessica taylor
+                        let patientJessica = ""
+                        data.map((item, id) => {
+                            if (item.phone_number === "(415) 555-1234") {
+                                patientJessica = 
+                                `
+                                <div class="patient-main column">
+                                    <div class="center">
+                                        <img class="patient-main-image" src=${item.profile_picture} alt="Image Main Patient">
+                                    </div>
+                                    <div class="patient-main-name-div">
+                                        <a class="patient-main-name ">${item.name}</a>
+                                    </div>
+                                    <div class="patient-main-bio">
+                                        <div class="row">
+                                            <div class="column">
+                                                <img class="icon-patient" src="./assets/icon/dob-icon.png" alt="Image Main Patient">
+                                            </div>
+                                            <div class="column">
+                                                <div>
+                                                    <a class="patient-main-key">Date Of Birth</a>
+                                                </div>
+                                                <div>
+                                                    <a class="patient-main-value">${item.date_of_birth}</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="column">
+                                                <img class="icon-patient" src="./assets/icon/female-gender-icon.png" alt="Image Main Patient">
+                                            </div>
+                                            <div class="column">
+                                                <div>
+                                                    <a class="patient-main-key">Gender</a>
+                                                </div>
+                                                <div>
+                                                    <a class="patient-main-value">${item.gender}</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="column">
+                                                <img class="icon-patient" src="./assets/icon/phone-icon.png" alt="Image Main Patient">
+                                            </div>
+                                            <div class="column">
+                                                <div>
+                                                    <a class="patient-main-key">Contact Info.</a>
+                                                </div>
+                                                <div>
+                                                    <a class="patient-main-value">${item.phone_number}</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="column">
+                                                <img class="icon-patient" src="./assets/icon/phone-icon.png" alt="Image Main Patient">
+                                            </div>
+                                            <div class="column">
+                                                <div>
+                                                    <a class="patient-main-key">Emergency Contacts</a>
+                                                </div>
+                                                <div>
+                                                    <a class="patient-main-value">${item.emergency_contact}</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="column">
+                                                <img class="icon-patient" src="./assets/icon/insurance-protection-icon.png" alt="Image Main Patient">
+                                            </div>
+                                            <div class="column">
+                                                <div>
+                                                    <a class="patient-main-key">Insurance Provider</a>
+                                                </div>
+                                                <div>
+                                                    <a class="patient-main-value">${item.insurance_type}</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="center patient-main-information-button">
+                                        <a class="patient-main-information-text">Show All Information</a>
+                                    </div>
+                                </div>
+                                `
+                            }
+                        })
+                        console.log("patientJessica: ", patientJessica);
+                        $('#patient-main').append(patientJessica);
+
+                        // Function to create and append an item
+                        function createItemDiv(item) {
+                            let fieldDiv = 
+                                `
+                                <div class="field-data row">
+                                        <div class="column">
+                                            <img class="field-data-image" src=${item.profile_picture} alt="Image Profile">
+                                        </div>
+                                        <div class="column field-data-bio">
+                                            <div class="field-data-name">
+                                                <a>${item.name}</a>
+                                            </div>
+                                            <div class="field-data-age">
+                                                <a>${item.gender}, ${item.age}</a>
+                                            </div>
+                                        </div>
+                                        <div class="column field-data-setting">
+                                            <img class="icon-setting" src="./assets/icon/dot-bar-icon-hor.png" alt="burger bar">
+                                        </div>
+                                </div>
+                                `
+                            $('#patient-data').append(fieldDiv);
+                        }
+
+                        // Check if the response is an array or a single object
+                        if (Array.isArray(data)) {
+                            data.forEach(createItemDiv);
+                        } else {
+                            createItemDiv(data);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
+
+                var ctx = document.getElementById('bloodPressureChart').getContext('2d');
+                var bloodPressureChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Oct, 2023', 'Nov, 2023', 'Dec, 2023', 'Jan, 2024', 'Feb, 2024', 'Mar, 2024'],
+                        datasets: [
+                            {
+                                label: 'Systolic',
+                                data: [120, 118, 160, 116, 150, 158],
+                                borderColor: 'rgba(230, 111, 210, 1)',
+                                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                                fill: true,
+                                tension: 0.4,
+                                pointRadius: 5,
+                            },
+                            {
+                                label: 'Diastolic',
+                                data: [110, 65, 110, 90, 70, 78],
+                                borderColor: 'rgba(140, 111, 230, 1)',
+                                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                                fill: true,
+                                tension: 0.4,
+                                pointRadius: 5,
+                            }
+                        ]
+                    },
+                    backgroundColor: 'rgba(244, 240, 254, 1)',
+                    options: {
+                        scales: {
+                            y: {
+                                min: 0,
+                                max: 180,
+                            }
+                        },
+                        bezierCurve: true,
+                        plugins: {
+                            legend: {
+                                position: 'right',
+                            },
+                            title: {
+                                display: true,
+                                text: 'Blood Pressure (Last 6 months)'
+                            },
+                            tooltip: {
+                                usePointStyle: true,
+                            },
+                        }
+                    }
+                });
+
+            });
+        
+            $( window ).on( "load", function() {
+                console.log( "window loaded" );
+            });
+        </script>
+    </head>
+
+    <body>
+        <div id="app">
+            <nav class="nav">
+                <ul class="ul-container row">
+                    <div class="column li-nav-div">
+                        <img class="icon-nav" src="./assets/TestLogo@2x.png" alt="Tech Care" width="210.58" height="48">
+                    </div>
+                    <div class="li-nav-div2">
+                        <li class="column li-nav">
+                            <div class="column icon-li-nav-div">
+                                <img class="icon-li-nav" src="./assets/icon/home-icon.png" alt="Image Main Patient">
+                            </div>
+                            <div class="column">
+                                <a href="#" class="text-nav" onclick=
+                                "changeContent('home')">
+                                    Overview
+                                </a>
+                            </div>
+                        </li>
+                        <li class="column active-menu">
+                            <div class="li-nav-active">
+                                <div class="column icon-li-nav-div">
+                                    <img class="icon-li-nav-active" src="./assets/icon/people-two-icon.png" alt="Image Main Patient">
+                                </div>
+                                <div class="column">
+                                    <a href="#" class="text-nav" onclick=
+                                    "changeContent('about')">
+                                        Patients
+                                    </a>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="column li-nav">
+                            <div class="column icon-li-nav-div">
+                                <img class="icon-li-nav" src="./assets/icon/calendar-icon.png" alt="Image Main Patient">
+                            </div>
+                            <div class="column">
+                                <a href="#" class="text-nav" onclick=
+                                "changeContent('contact')">
+                                    Schedule
+                                </a>
+                            </div>
+                        </li>
+                        <li class="column li-nav">
+                            <div class="column icon-li-nav-div">
+                                <img class="icon-li-nav" src="./assets/icon/chat-icon.png" alt="Image Main Patient">
+                            </div>
+                            <div class="column">
+                                <a href="#" class="text-nav" onclick=
+                                "changeContent('contact')">
+                                    Message
+                                </a>
+                            </div>
+                        </li>
+                        <li class="column li-nav">
+                            <div class="column icon-li-nav-div">
+                                <img class="icon-li-nav" src="./assets/icon/credit-card-icon.png" alt="Image Main Patient">
+                            </div>
+                            <div class="column">
+                                <a href="#" class="text-nav" onclick=
+                                "changeContent('contact')">
+                                    Transaction
+                                </a>
+                            </div>
+                        </li>
+                    </div>
+                    <div class="column li-nav-div3">
+                        <div>
+                            <img class="profile-image" src="./assets/image-profile.png" alt="Image Profile">
+                        </div>
+                        <div class="row profile-name">
+                            <div class="">
+                                <a class="column text-nav" >
+                                    Dr. Jose Simmons
+                                </a>
+                            </div>
+                            <div>
+                                <a class="column text-nav-title ">
+                                    General Practitioner
+                                </a>
+                            </div>
+                        </div>
+                        <div class="profile-setting">
+                            <img class="icon-li-nav" src="./assets/icon/setting-icon.png" alt="Setting">
+                        </div>
+                        <div>
+                            <img class="icon-li-nav" src="./assets/icon/dot-bar-icon-vert.png" alt="Burger Bar">
+                        </div>
+                    </div>
+                </ul>
+            </nav>
+            <main>
+                <div class="row body-menu">
+                    <div class="column card-column1">
+                        <div class="ex1">
+                            <div class="title-patient-card">
+                                <a class="patients">Patients</a>
+                                <img class="icon-lab-result" src="./assets/icon/search-icon.png" alt="Image Main Patient">
+                            </div>
+                            <div class="patient-data">
+                                <div id="patient-data"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="column card-column2">
+                        <div class="card-diagnosis-history row">
+                            <a class="diagnosis-history-text">
+                                Diagnosis History
+                            </a>
+                            <div class="chart-container">
+                                <canvas id="bloodPressureChart"></canvas>
+                            </div>
+                            <div class="diagnosis-container">
+                                <div class="info-box blue">
+                                    <div>
+                                        <img class="" src="./assets/respiratory.png" alt="Respiratory Rate">
+                                    </div>
+                                    <a class="info-box-title">Respiratory Rate</a>
+                                    <p class="info-box-value">20 bpm</p>
+                                    <p class="info-box-status">Normal</p>
+                                </div>
+                                <div class="info-box red">
+                                    <img src="./assets/temperature.png" alt="Temperature">
+                                    <a class="info-box-title">Temperature</a>
+                                    <p class="info-box-value">98.6°F</p>
+                                    <p class="info-box-status">Normal</p>
+                                </div>
+                                <div class="info-box pink">
+                                    <img src="./assets/heartbeat.png" alt="Heart Rate">
+                                    <a class="info-box-title">Heart Rate</a>
+                                    <p class="info-box-value">78 bpm</p>
+                                    <p class="info-box-status">Lower than Average</p>
+                                </div>
+                            </div>    
+                        </div>
+                        <div class="card-diagnostic-list">
+                            <a class="diagnostic-list-text">
+                                Diagnostic List
+                            </a>
+                            <div class="diagnostic-container">
+                                <div class="row trh-diagnostic">
+                                    <div class="th-diagnostic1">Problem/Diagnosis</div>
+                                    <div class="th-diagnostic2">Description</div>
+                                    <div class="th-diagnostic3">Status</div>
+                                </div>
+
+                                <div class="trd-diagnostic row">
+                                    <div class="th-diagnostic1">
+                                        <a>Hypertension</a>
+                                    </div>
+                                    <div class="th-diagnostic2">
+                                        <a>Chronic high blood pressure</a>
+                                    </div>
+                                    <div class="th-diagnostic3">
+                                        <a>Under Observation</a>
+                                    </div>
+                                    <div class="th-diagnostic1">
+                                        <a>Type 2 Diabetes</a>
+                                    </div>
+                                    <div class="th-diagnostic2">
+                                        <a>Insulin resistance and elevated blood sugar Insulin resistance and elevated blood sugar</a>
+                                    </div>
+                                    <div class="th-diagnostic3">
+                                        <a>Cured</a>
+                                    </div>
+                                    <div class="th-diagnostic1">
+                                        <a>Asthma</a>
+                                    </div>
+                                    <div class="th-diagnostic2">
+                                        <a>Recurrent episodes of bronchial constriction</a>
+                                    </div>
+                                    <div class="th-diagnostic3">
+                                        <a>Inactive</a>
+                                    </div>
+                                </div>
+
+                                <div class="trd-diagnostic row">
+                                    <div class="column th-diagnostic1">
+                                        <a>Type 2 Diabetes</a>
+                                    </div>
+                                    <div class="column th-diagnostic2">
+                                        <a>Insulin resistance and elevated blood sugar Insulin resistance and elevated blood sugar</a>
+                                    </div>
+                                    <div class="column th-diagnostic3">
+                                        <a>Cured</a>
+                                    </div>
+                                </div>
+                            </div>    
+                        </div>        
+                    </div>
+                    <div class="column card-column3">
+                        <div id="patient-main"></div>
+                        <div class="lab-result column">
+                            <div class="lab-result-title-div">
+                                <a class="lab-result-title">Lab Result</a>
+                            </div>
+                            <div class="lab-result-card">
+                                <div class="lab-result-content grid-container">
+                                    <a class="lab-result-text">Blood Tests</a>
+                                    <img class="icon-lab-result" src="./assets/icon/download-icon.png" alt="Image Main Patient">
+                                    <div>
+                                    </div>
+                                </div>
+                                <div class="lab-result-content grid-container">
+                                    <a class="lab-result-text">CT Scans</a>
+                                    <img class="icon-lab-result" src="./assets/icon/download-icon.png" alt="Image Main Patient">
+                                    <div>
+                                    </div>
+                                </div>
+                                <div class="lab-result-content grid-container">
+                                    <a class="lab-result-text">Radiology Reports</a>
+                                    <img class="icon-lab-result" src="./assets/icon/download-icon.png" alt="Image Main Patient">
+                                    <div>
+                                    </div>
+                                </div>
+                                <div class="lab-result-content grid-container">
+                                    <a class="lab-result-text">X-Rays</a>
+                                    <img class="icon-lab-result" src="./assets/icon/download-icon.png" alt="Image Main Patient">
+                                    <div>
+                                    </div>
+                                </div>
+                                <div class="lab-result-content grid-container">
+                                    <a class="lab-result-text">Urine Test</a>
+                                    <img class="icon-lab-result" src="./assets/icon/download-icon.png" alt="Image Main Patient">
+                                    <div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </body>
+</html>
